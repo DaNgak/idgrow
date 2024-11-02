@@ -2,18 +2,20 @@
 
 namespace App\Services;
 
+use App\Models\Mutation;
 use App\Models\Product;
+use App\Models\User;
 use Carbon\Carbon;
 
-class ProductService 
+class MutationService 
 {
-    private $product;
+    private $mutation;
     private $time;
-    
-    public function __construct(Product $product)
+
+    public function __construct(Mutation $mutation)
     {
         $this->time = Carbon::now();
-        $this->product = $product;
+        $this->mutation = $mutation;
     }
 
     /**
@@ -24,15 +26,15 @@ class ProductService
      */
     public function index(array $data): array
     {
-        // Ambil input pencarian
         $search = $data['search'] ?? '';
 
-        // Filter dan ambil data produk menggunakan `when`
-        $data = $this->product->query()
+        $data = $this->mutation->query()
+            ->with(['user', 'product'])
             ->when($search, function ($query, $search) {
                 $query->where('uuid', 'like', '%' . $search . '%')
-                    ->orWhere('name', 'like', '%' . $search . '%')
-                    ->orWhere('code', 'like', '%' . $search . '%');
+                    ->orWhere('date', 'like', '%' . $search . '%')
+                    ->orWhere('quantity', 'like', '%' . $search . '%')
+                    ->orWhere('type', 'like', '%' . $search . '%');
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -44,28 +46,31 @@ class ProductService
     }
 
     /**
-     * Store new Product
+     * Store new Mutation
      * 
      * @param array $data
      * @return array
      */
     public function store(array $data): array
     {
-        // Create product dari model Product
-        $result = $this->product->create($data);
+        $product = Product::select(['id'])->where('uuid', $data['product_id'])->first();
+        $user = User::select(['id'])->where('uuid', $data['user_id'])->first();
 
-        // Return jika gagal create product
+        $data['product_id'] = $product->id;
+        $data['user_id'] = $user->id;
+
+        $result = $this->mutation->create($data);
+
         if (!$result) {
             return [
                 'status' => false,
                 'response' => [
                     'code' => 400,
-                    'message' => 'Gagal melakukan create data produk!',
+                    'message' => 'Gagal menambahkan data mutasi!',
                 ]
             ];
         }
 
-        // Return jika berhasil
         return [
             'status' => true,
             'data' => $result
@@ -73,62 +78,55 @@ class ProductService
     }
 
     /**
-     * Update data Product
+     * Update Mutation Data
      * 
-     * @param Product $product
+     * @param Mutation $mutation
      * @param array $data
      * @return array
      */
-    public function update(Product $product, array $data): array
+    public function update(Mutation $mutation, array $data): array
     {
-        // Update product dari model Product
-        $result = $product->update($data);
+        $result = $mutation->update($data);
 
-        // Return jika gagal update product
         if (!$result) {
             return [
                 'status' => false,
                 'response' => [
                     'code' => 400,
-                    'message' => 'Gagal melakukan update data produk!',
+                    'message' => 'Gagal memperbarui data mutasi!',
                 ]
             ];
         }
 
-        // Return jika berhasil
         return [
             'status' => true,
-            'data' => $product->refresh()
+            'data' => $mutation->refresh()
         ];
     }
 
     /**
-     * Delete data Product
+     * Delete Mutation Data
      * 
-     * @param Product $product
+     * @param Mutation $mutation
      * @return array
      */
-    public function destroy(Product $product): array
+    public function destroy(Mutation $mutation): array
     {
-        // Delete product dari model Product
-        $result = $product->delete();
+        $result = $mutation->delete();
 
-        // Return jika gagal delete product
         if (!$result) {
             return [
                 'status' => false,
                 'response' => [
                     'code' => 400,
-                    'message' => 'Gagal melakukan delete data produk!',
+                    'message' => 'Gagal menghapus data mutasi!',
                 ]
             ];
         }
 
-        // Return jika berhasil
         return [
             'status' => true,
             'data' => null
         ];
     }
-
 }

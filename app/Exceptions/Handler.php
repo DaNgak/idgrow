@@ -72,21 +72,36 @@ class Handler extends ExceptionHandler
                     : 'Internal server error',
             ];
 
-            // Case Exception Validation
-            if ($e instanceof ValidationException) {
-                $messages = [];
+            if ($e instanceof HttpException) {
+                $statusCode = $e->getStatusCode();
+                $message = $e->getMessage();
 
-                foreach ($e->errors() as $error) {
-                    $messages[] = $error[0];
-                }
-
-                $message = $messages;
-                $statusCode = 422;
+                // dd("masuk sini");
             }
 
-            if ($e instanceof ModelNotFoundException || $e instanceof NotFoundHttpException || $e instanceof ItemNotFoundException) {
+            // Case Exception Validation
+            if ($e instanceof ValidationException) {
+                // $errorsList = [];
+
+                // foreach ($e->errors() as $key => $error) {
+                //     $errorsList[$key] = $error;
+                // }
+
+                $statusCode = 422;
+                $message = "Validation Errors";
+                $errors = $e->errors();
+            }
+
+            if ($e instanceof NotFoundHttpException) {
                 $statusCode = 404;
-                $message = ['The data or route you\'re looking for couldn\'t be found!'];
+                $message = 'The route you\'re looking for couldn\'t be found!';
+                // dd("masuk sini 2");
+            }
+
+            if ($e instanceof ModelNotFoundException || $e instanceof ItemNotFoundException) {
+                $statusCode = 404;
+                $message = 'The data you\'re looking for couldn\'t be found!';
+                // dd("masuk sini 3");
             }
 
             if ($e instanceof UnauthorizedException || $e instanceof UnauthorizedHttpException || $e instanceof AuthenticationException) {
@@ -99,15 +114,10 @@ class Handler extends ExceptionHandler
                 $message = $e->getMessage();
             }
 
-            if ($e instanceof HttpException) {
-                $statusCode = $e->getStatusCode();
-                $message = $e->getMessage();
-            }
-
             return response()->json([
                 'code' => $statusCode,
                 'message' => $message,
-                'errors' => []
+                'errors' => isset($errors) && count($errors) !== 0 ? $errors : []
             ], $statusCode);
         });
     }

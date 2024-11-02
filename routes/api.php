@@ -31,23 +31,26 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('profile', [AuthController::class, 'profile'])->name('profile');
-        
-        // Route untuk manajemen Product atau Barang
-        Route::prefix('products')->name('products.')->group(function () {
-            Route::get('/', [ProductController::class, 'index'])->name('index'); // GET /products
-            Route::post('/', [ProductController::class, 'store'])->name('store'); // POST /products
-            Route::get('/{product}', [ProductController::class, 'show'])->name('show'); // GET /products/{product}
-            Route::put('/{product}', [ProductController::class, 'update'])->name('update'); // PUT /products/{product}
-            Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy'); // DELETE /products/{product}
-        });
-        
-        // Route untuk manajemen Mutation atau Mutasi
-        Route::prefix('mutations')->name('mutations.')->group(function () {
-            Route::get('/', [MutationController::class, 'index'])->name('index'); // GET /mutations
-            Route::post('/', [MutationController::class, 'store'])->name('store'); // POST /mutations
-            Route::get('/{mutation}', [MutationController::class, 'show'])->name('show'); // GET /mutations/{mutation}
-            Route::put('/{mutation}', [MutationController::class, 'update'])->name('update'); // PUT /mutations/{mutation}
-            Route::delete('/{mutation}', [MutationController::class, 'destroy'])->name('destroy'); // DELETE /mutations/{mutation}
+
+        // Grouping dengan route dashboard
+        Route::prefix('dashboard')->group(function() {  
+            // Route untuk manajemen Product atau Barang
+            Route::prefix('products')->name('products.')->group(function () {
+                Route::get('/', [ProductController::class, 'index'])->name('index'); // GET /products
+                Route::post('/', [ProductController::class, 'store'])->name('store'); // POST /products
+                Route::get('/{product}', [ProductController::class, 'show'])->name('show'); // GET /products/{product}
+                Route::put('/{product}', [ProductController::class, 'update'])->name('update'); // PUT /products/{product}
+                Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy'); // DELETE /products/{product}
+            });
+            
+            // Route untuk manajemen Mutation atau Mutasi
+            Route::prefix('mutations')->name('mutations.')->group(function () {
+                Route::get('/', [MutationController::class, 'index'])->name('index'); // GET /mutations
+                Route::post('/', [MutationController::class, 'store'])->name('store'); // POST /mutations
+                Route::get('/{mutation}', [MutationController::class, 'show'])->name('show'); // GET /mutations/{mutation}
+                Route::put('/{mutation}', [MutationController::class, 'update'])->name('update'); // PUT /mutations/{mutation}
+                Route::delete('/{mutation}', [MutationController::class, 'destroy'])->name('destroy'); // DELETE /mutations/{mutation}
+            });
         });
     });
 });

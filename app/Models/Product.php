@@ -29,8 +29,13 @@ class Product extends Model
         });
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
     /**
-     * Get all of the mutations for the Product
+     * Get all of the mutations for the Product 
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */

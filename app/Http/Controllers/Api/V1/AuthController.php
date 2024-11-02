@@ -64,10 +64,10 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             // Simpan error di log dengan type critical
             Log::critical('API Login Error: ', [
-                'code' => $th->getCode(),
                 'message' => $th->getMessage(),
                 'file' => $th->getFile(),
-                'line' => $th->getLine()
+                'line' => $th->getLine(),
+                "trace" => $th->getTraceAsString()
             ]);
             
             // Set error message default
@@ -117,10 +117,10 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             // Simpan error di log dengan type critical
             Log::critical('API Registration Error: ', [
-                'code' => $th->getCode(),
                 'message' => $th->getMessage(),
                 'file' => $th->getFile(),
-                'line' => $th->getLine()
+                'line' => $th->getLine(),
+                "trace" => $th->getTraceAsString()
             ]);
 
             // Set error message default
@@ -157,10 +157,10 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             // Simpan error di log dengan type critical
             Log::critical('API Logout Error: ', [
-                'code' => $th->getCode(),
                 'message' => $th->getMessage(),
                 'file' => $th->getFile(),
-                'line' => $th->getLine()
+                'line' => $th->getLine(),
+                "trace" => $th->getTraceAsString()
             ]);
 
             // Set error message default
@@ -201,10 +201,10 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             // Simpan error di log dengan type critical
             Log::critical('API Profile Error: ', [
-                'code' => $th->getCode(),
                 'message' => $th->getMessage(),
                 'file' => $th->getFile(),
-                'line' => $th->getLine()
+                'line' => $th->getLine(),
+                "trace" => $th->getTraceAsString()
             ]);
 
             // Set error message default

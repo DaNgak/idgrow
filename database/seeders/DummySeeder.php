@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DummySeeder extends Seeder
 {
@@ -15,9 +16,12 @@ class DummySeeder extends Seeder
      */
     public function run(): void
     {
+        // Set allow foreign key 
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;'); // Disable foreign key checks
         Mutation::truncate();
         Product::truncate();
         User::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;'); // Re-enable foreign key checks
 
         // Buat 5 produk
         $products = Product::factory()->count(5)->create();

@@ -13,12 +13,12 @@ services:
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
-      - DB_CONNECTION=mysql
-      - DB_HOST=idgrow_database
-      - DB_PORT=3306
-      - DB_DATABASE=idgrow_db
-      - DB_USERNAME=idgrowuser
-      - DB_PASSWORD=idgrowpassword
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
     networks:
       - idgrow_network
 
@@ -29,7 +29,7 @@ services:
       - .:/var/www
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - "8000:80"
+      - "8080:80"
     depends_on:
       - idgrow_app
     networks:
@@ -39,17 +39,26 @@ services:
     image: mysql:8.0
     container_name: idgrow_database
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}  # Default jika tidak ada di .env
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3307:3306"
     volumes:
       - dbdata:/var/lib/mysql
     networks:
       - idgrow_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
+      retries: 3
+      timeout: 5s
 
 networks:
   idgrow_network:
+    driver: bridge
 
 volumes:
   dbdata:
+    driver: local

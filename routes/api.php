@@ -5,7 +5,9 @@ use App\Http\Controllers\Api\V1\MutationController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +23,22 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+
+// Config Artisan atau Cronjob
+Route::get('/seed-dummy/{token}', function (string $token) {
+    if ($token !== 'idgrow-test') {
+        throw new NotFoundHttpException();
+    }
+    // dd("Jalankan dummy seeder");
+    try {
+        Artisan::call('db:seed', [
+            '--class' => 'DummySeeder',
+        ]);
+        return response()->json(['message' => 'DummySeeder has been run successfully']);
+    } catch (\Throwable $th) {
+        return response()->json(['message' => 'Terjadi kesalahan pada server!: ' . $th->getMessage()]);
+    }
+});
 
 Route::prefix('v1')->group(function () {
     // Route untuk login dan register

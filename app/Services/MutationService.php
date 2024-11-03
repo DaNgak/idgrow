@@ -27,9 +27,21 @@ class MutationService
     public function index(array $data): array
     {
         $search = $data['search'] ?? '';
+        $filterUser = $data['filter']['user'] ?? null;
+        $filterProduct = $data['filter']['product'] ?? null;
 
-        $data = $this->mutation->query()
+        $mutations = $this->mutation->query()
             ->with(['user', 'product'])
+            ->when($filterUser, function ($query, $filterUser) {
+                $query->whereHas('user', function ($q) use ($filterUser) {
+                    $q->where('uuid', $filterUser);
+                });
+            })
+            ->when($filterProduct, function ($query, $filterProduct) {
+                $query->whereHas('product', function ($q) use ($filterProduct) {
+                    $q->where('uuid', $filterProduct);
+                });
+            })
             ->when($search, function ($query, $search) {
                 $query->where('uuid', 'like', '%' . $search . '%')
                     ->orWhere('date', 'like', '%' . $search . '%')
@@ -41,7 +53,7 @@ class MutationService
 
         return [
             'status' => true,
-            'data' => $data
+            'data' => $mutations
         ];
     }
 
@@ -53,12 +65,15 @@ class MutationService
      */
     public function store(array $data): array
     {
+        // Ambil id dari uuid yang ada didalam array data
         $product = Product::select(['id'])->where('uuid', $data['product_id'])->first();
         $user = User::select(['id'])->where('uuid', $data['user_id'])->first();
 
+        // Gantikan value uuid dari request ke id
         $data['product_id'] = $product->id;
         $data['user_id'] = $user->id;
 
+        // Buat product dari model mutation
         $result = $this->mutation->create($data);
 
         if (!$result) {
@@ -73,7 +88,7 @@ class MutationService
 
         return [
             'status' => true,
-            'data' => $result
+            'data' => $result->load(['user', 'product'])
         ];
     }
 
@@ -86,6 +101,15 @@ class MutationService
      */
     public function update(Mutation $mutation, array $data): array
     {
+        // Ambil id dari uuid yang ada didalam array data
+        $product = Product::select(['id'])->where('uuid', $data['product_id'])->first();
+        $user = User::select(['id'])->where('uuid', $data['user_id'])->first();
+
+        // Gantikan value uuid dari request ke id
+        $data['product_id'] = $product->id;
+        $data['user_id'] = $user->id;
+
+        // Update product dari model mutation
         $result = $mutation->update($data);
 
         if (!$result) {
@@ -100,7 +124,7 @@ class MutationService
 
         return [
             'status' => true,
-            'data' => $mutation->refresh()
+            'data' => $mutation->refresh()->load(['user', 'product'])
         ];
     }
 
